@@ -1,0 +1,26 @@
+{
+  "name": "@j0nz/phase",
+  "version": "1.0.0",
+  "main": "mix.js",
+  "author": "Reed Jones <reedjones@reedjones.com>",
+  "license": "MIT",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "test": "node test/test.js",
+    "pretest": "npm run build"
+  },
+  "peerDependencies": {
+    "laravel-mix": "^5.0.1"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-runtime": "^7.7.6",
+    "rollup": "^1.27.13"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@babel/runtime": "^7.7.7"
+  }
+}
