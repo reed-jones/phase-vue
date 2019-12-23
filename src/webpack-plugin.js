@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import fse from 'fs-extra'
 import * as path from 'path'
 import { execSync } from 'child_process';
 import { createRoutes } from './routes'
@@ -11,20 +12,24 @@ function generateRoutes(options) { // there are no options
         let uri = r.uri.startsWith('/') ? r.uri : `/${r.uri}`;
         return {
             name: r.controller,
-            path: uri.replace(/{(.*?)}/g, ":$1"),
+            path: uri.replace(/{(.*?)}/g, ":$1"), // convert {user} to :user style params
             specifier: r.controller.split('@')[1],
-            component: `../../resources/js/pages/${r.controller.replace('@', '/')}.vue`
+            relative: `resources/js/pages/${r.controller.replace('@', '/')}.vue`,
+            component: `../../../resources/js/pages/${r.controller.replace('@', '/')}.vue`
         }
     })
 
-    const missing = routes.filter(r => !fs.existsSync(r.component))
+    const missing = routes.filter(r => !fs.existsSync(r.relative))
 
     if (missing.length) {
-        for (let route of notYet) {
+        for (let route of missing) {
             // generate template component
-            fs.writeFileSync(route.component, `
+            fse.outputFileSync(route.relative, `
 <template>
+<div>
     <h1>Welcome to: ${route.name}</h1>
+    ${routes.filter(r => r.name !== route.name).map(r => `<RouterLink to="${r.path}">${r.name}</RouterLink>`)}
+</div>
 </template>
 
 <script>

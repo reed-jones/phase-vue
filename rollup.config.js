@@ -9,7 +9,7 @@ export default [
   // `file` and `format` for each target)
   {
     input: "src/index.js",
-    output: [{ file: 'lib/phase.cjs.js', format: "cjs" }],
+    output: [{ file: pkg.main, format: "cjs" }],
     external: ["fs", "path", "child_process"]
   }
 ];

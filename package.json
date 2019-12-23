@@ -1,7 +1,7 @@
 {
   "name": "@j0nz/phase",
   "version": "1.0.0",
-  "main": "mix.js",
+  "main": "lib/phase.cjs.js",
   "author": "Reed Jones <reedjones@reedjones.com>",
   "license": "MIT",
   "scripts": {
@@ -17,10 +17,8 @@
     "@babel/plugin-transform-runtime": "^7.7.6",
     "rollup": "^1.27.13"
   },
-  "files": [
-    "dist"
-  ],
   "dependencies": {
-    "@babel/runtime": "^7.7.7"
+    "@babel/runtime": "^7.7.7",
+    "fs-extra": "^8.1.0"
   }
 }
