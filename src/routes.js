@@ -1,61 +1,72 @@
-function createChildrenRoute(children) {
-  return `,children: [${children.map(createRoute).join(',')}]`
-}
+import { routeCodeGen } from "./templates/routes";
 
-function createRoute(meta) {
-  const children = !meta.children ? '' : createChildrenRoute(meta.children)
-
-  // If default child is exists, the route should not have a name.
-  const routeName =
-    meta.children && meta.children.some(m => m.path === '')
-      ? ''
-      : `name: '${meta.name}',`
-
-  const routeMeta = !meta.routeMeta
-    ? ''
-    : ',meta: ' + JSON.stringify(meta.routeMeta, null, 2)
-
-  return `
-  {
-    ${routeName}
-    path: '${meta.path}',
-    beforeEnter: async (to, from, next) => {
-        await axios.get(to.fullPath)
-        next()
-    },
-    component: ${meta.specifier}${routeMeta}${children}
-  }`
-}
-
-function createImport(
-  meta,
-  dynamic,
-  chunkNamePrefix
-) {
-
+const createImport = (dynamic, chunkNamePrefix) => route => {
+  const preparedImport = createImport(dynamic, chunkNamePrefix);
+  const { name, prefix, componentName, file_path } = route;
+  const webpackChunkName = `${chunkNamePrefix}${prefix || name}`;
   const code = dynamic
-    ? `function ${meta.specifier}() { return import(/* webpackChunkName: "${chunkNamePrefix}${meta.name}" */ '${meta.component}') }`
-    : `import ${meta.specifier} from '${meta.component}'`
+    ? `const ${name} = () => import(/* webpackChunkName: "${webpackChunkName}" */ '${name}')`
+    : `import ${componentName} from '../../../${file_path}'`;
 
-  return meta.children
-    ? [code]
-        .concat(
-          meta.children.map(child =>
-            createImport(child, dynamic, chunkNamePrefix)
-          )
-        )
-        .join('\n')
-    : code
+  return route.children
+    ? [code].concat(route.children.map(preparedImport)).join("\n")
+    : code;
+};
+
+function createRoute(config) {
+  return function(route) {
+    // If default child is exists, the route should not have a name.
+    const routeName =
+      route.children && route.children.some(m => m.file_path === "")
+        ? ""
+        : `name: '${route.name}'`;
+
+    const routePath = `path: '${route.uri}'`;
+
+    const routeBeforeEnter = `beforeEnter: phaseBeforeEnter`;
+
+    const routeComponent = `component: ${route.componentName}`;
+
+    const routeMeta = !route.middleware
+      ? ""
+      : `meta: { middleware: ${JSON.stringify(route.middleware.split(","))} }`;
+
+    const routeChildren = !route.children
+      ? ""
+      : `children: [${children.map(createRoute(config)).join(",")}]`;
+
+    return `
+  {
+    ${[
+      routeName,
+      routePath,
+      routeBeforeEnter,
+      routeComponent,
+      routeMeta,
+      routeChildren
+    ]
+      .filter(a => a)
+      .join(",\n    ")}
+  }`;
+  };
 }
 
 export function createRoutes(
   meta,
+  config,
   dynamic = false,
-  chunkNamePrefix = ''
+  chunkNamePrefix = ""
 ) {
-  const imports = meta
-    .map(m => createImport(m, dynamic, chunkNamePrefix))
-    .join('\n')
-  const code = meta.map(createRoute).join(',')
-  return `${imports}\n\nexport default [${code}]`
+  // get partial import
+  const preparedImport = createImport(dynamic, chunkNamePrefix);
+
+  // generate import headers
+  const imports = meta.map(preparedImport).join("\n");
+
+  // get partial routes
+  const configRoute = createRoute(config);
+
+  const code = meta.map(configRoute).join(",");
+
+  return routeCodeGen(imports, code, config);
 }
