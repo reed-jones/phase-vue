@@ -1,6 +1,6 @@
 {
   "name": "@j0nz/phase",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "lib/phase.cjs.js",
   "author": "Reed Jones <reedjones@reedjones.com>",
   "license": "ISC",
