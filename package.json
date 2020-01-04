@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "lib/phase.cjs.js",
   "author": "Reed Jones <reedjones@reedjones.com>",
-  "license": "MIT",
+  "license": "ISC",
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",

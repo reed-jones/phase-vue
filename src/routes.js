@@ -66,6 +66,7 @@ export function createRoutes(
   // get partial routes
   const configRoute = createRoute(config);
 
+  // generate routes
   const code = meta.map(configRoute).join(",");
 
   return routeCodeGen(imports, code, config);
