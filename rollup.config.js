@@ -1,3 +1,6 @@
+import resolve from "rollup-plugin-node-resolve";
+import commonjs from "rollup-plugin-commonjs";
+
 import pkg from "./package.json";
 
 export default [
@@ -10,6 +13,12 @@ export default [
   {
     input: "src/index.js",
     output: [{ file: pkg.main, format: "cjs" }],
-    external: ["fs", "path", "child_process"]
+    external: ["fs", "path", "child_process"],
+    plugins: [
+      resolve({
+        preferBuiltins: true
+      }), // so Rollup can find `ms`
+      commonjs() // so Rollup can convert `ms` to an ES module
+    ]
   }
 ];
