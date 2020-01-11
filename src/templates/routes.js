@@ -1,24 +1,33 @@
 
 export const routeCodeGen = (imports, code, config) => `${imports}
 
+const redirects = ${JSON.stringify(config.redirects)}
+
 const phaseBeforeEnter = async (to, from, next) => {
   try {
     // retrieve data from controller
     const { request } = await axios.get(to.fullPath)
 
-    // check for server redirects
+    // check for server side redirects
     const finalUrl = new URL(request.responseURL).pathname
 
-    // proceed to next stage
-    if (to.fullPath === finalUrl) {
-      next()
-    } else {
-      next(finalUrl)
+    // follow redirects (if any)
+    if (to.path !== finalUrl) {
+      return next({
+        path: finalUrl,
+        query: { redirect: to.fullPath }
+      })
     }
+
+    // proceed to next page as usual
+    return next()
+
   } catch (err) {
-    // unauthenticated
-    if (err && err.response && err.response.status === 401) {
-      next({ name: '${config.unauthorized}' })
+    if (err && err.response && err.response.status && redirects[err.response.status]) {
+      return next({
+        name: redirects[err.response.status],
+        query: { redirect: to.fullPath }
+      })
     }
   }
 }
